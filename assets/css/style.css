@@ -357,6 +357,16 @@ a.thumbnail > img {
     .media img:hover {
         opacity: 0.6;
     }
+    #about i {
+      font-size: 80px;
+      color: black;
+      text-decoration: none;
+    }
+    #about a h4 {
+      font-size: 20px;
+      color: black;
+      text-decoration: none;
+    }
 /* =============================================================
   CONTACT SECTION STYLES
  ============================================================ */

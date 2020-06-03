@@ -1,0 +1,362 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="MongoDB on Raspberry Pi (armhf cross-compiling)" />
+    <meta name="author" content="Federico Manzella" />
+    <!-- OPENGRAPH STUFF -->
+    <meta property="og:site_name" content="Federico Manzella"/>
+    <meta property="og:title" content="MongoDB on Raspberry Pi (armhf cross-compiling)"/>
+    <meta property="og:description" content="MongoDB on Raspberry Pi (armhf cross-compiling)"/>
+    <meta property="og:image" content="https://ferdiu.github.io/assets/img/thumbnail.jpg">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="650">
+    <meta property="og:image:height" content="720">
+    <meta property="og:url" content="https://ferdiu.github.io/">
+    <meta property="og:type" content="website"/>
+    <!--[if IE]>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <![endif]-->
+    <title>MongoDB on Raspberry Pi (armhf cross-compiling)</title>
+    <!-- BOOTSTRAP CORE CSS -->
+    <link href="/assets/css/bootstrap.css" rel="stylesheet" />
+    <!-- IONICON STYLE SHEET FOR BEAUTIFUL ICONS -->
+    <link href="/assets/css/ionicons.css" rel="stylesheet" />
+    <!-- FONTAWESOME STYLE SHEET FOR BEAUTIFUL ICONS -->
+    <link href="/assets/css/all.css" rel="stylesheet" />
+    <!-- STYLE FOR OPENING IMAGE IN POPUP USING FANCYBOX-->
+    <link href="/assets/js/source/jquery.fancybox.css" rel="stylesheet" />
+    <!-- CUSTOM CSS -->
+    <link href="/assets/css/style.css" rel="stylesheet" />
+    <!-- HTML5 Shiv and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body data-spy="scroll" data-target=".navbar-fixed-top">
+
+    <div class="navbar navbar-default navbar-fixed-top scroll-me">
+        <!-- pass scroll-me class above a tags to starts scrolling -->
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">
+                    <img src="/assets/img/logo.svg" style="height: 50px; width: auto;" alt=""/>
+                </a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="/">HOME</a></li>
+		</ul>
+            </div>
+
+        </div>
+    </div>
+    <!-- NAVBAR END  -->
+    <div id="header">
+        <div class="overlay">
+            <div class="container">
+                <div class="row scroll-me">
+                    <div class="col-md-6 col-md-offset-3 col-sm-6 col-sm-offset-3 text-center ">
+
+                        <h1 data-scroll-reveal="enter from the bottom after 0.1s"><br>MongoDB<br>on<br>Raspberry Pi
+                        </h1>
+
+                        <h4 data-scroll-reveal="enter from the bottom after 0.2s">
+			                  	(v4.0.18 for armhf cross-compiling)
+                        </h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!--HEADER SECTION END  -->
+    <section id="guide">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-8 col-md-offset-2 pad-bottom text-left">
+                    <h2><strong>How to install MongoDB v4.0.18 on Raspberry Pi (armv7l)</strong></h2>
+                    <h3><strong>Overview</strong></h3><p>
+                    I was planning on porting my server on the Raspberry Pi because of its low consumption.
+		    Everything was ready but MongoDB (at the time Raspbian had v2.4.14).<br><br>
+		    <strong>NB</strong> this is the newest version available with mmapv1 database engine so the newest you can get for arm devices (from v4.1.x only wiredtiger is supported which is 64bit only).
+                    <h3><strong>Preparation</strong></h3>
+		    Install the needed packages:<pre>apt install build-essential wget scons libboost-filesystem-dev libboost-program-options-dev libboost-system-dev libboost-thread-dev gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf</pre>
+		    Then tou need to populate the directiories <code>/usr/arm-linux-gnueabihf/lib/</code> and <code>/usr/arm-linux-gnueabihf/include/</code> with the header file from the Raspi packages libssl-dev and libcurl-dev.
+		    Time to clone the mongodb repo and checout to the version 'r4.0.18':<pre>git clone https://github.com/mongodb/mongo.git
+cd mongo
+git checkout "r4.0.18"</pre><br>
+		    <p><strong>NB</strong> I builded this on Debian which doesn't provide natively <code>libssl-dev</code> and <code>libcurl-dev</code> for cross-compiling.<br>
+What I did was installing these devvelopment libraries on the raspberry and then copying the content of directories following this scheme:<pre>Raspberry Pi		|	Debian machine
+/usr/include/ssl	->	/usr/arm-linux-gnueabihf/include/ssl
+/usr/include/curl	->	/usr/arm-linux-gnueabihf/include/curl</pre>
+Basically you can run on your raspberry:<pre>apt download libssl-dev libcurl4-openssl-dev libssl1.1 libcurl4
+mkdir mongo-dep
+# extract all downloaded packages in the directory mongo-dep
+for pkg in *.deb; do dpkg -x $pkg mongo-dep/; done
+rm lib*.deb
+cd mongo-dep/usr/include
+ln -s arm-linux-gnueabihf/curl/ curl
+cd openssl/
+ln -s ../arm-linux-gnueabihf/openssl/opensslconf.h
+cd ../..
+rm -rf lib/arm-linux-gnueabihf/pkgconfig/ bin/ share/
+mv lib/arm-linux-gnueabihf/* lib/
+rmdir lib/arm-linux-gnueabihf/
+cd ../..
+mv mongo-dep/usr arm-linux-gnueabihf
+rmdir mongo-dep</pre>
+<br>(of course you can copy paste all these commands in a bash script)<br><br>once done that you should end up with a directory named <code>arm-linux-gnueabihf</code> that you can merge with the directory on your "building computer" <code>/usr/arm-linux-gnueabihf</code>.
+		    </p></p>
+		    <h3><strong>Configuration</strong></h3>
+		    <p>Lets take care of the third_party directory first.
+		    The troublemaker packages are mozjs and gperftools.
+		    To solve problems with mozjs do this:<pre>cd src/third_party/mozjs-45/</pre>
+		    Now modify the file <code>gen-config.sh</code> from:<pre>[...]
+  case "$_Path" in
+      "platform/aarch64/linux")
+          _CONFIG_OPTS="--host=aarch64-linux"
+          ;;
+      "platform/ppc64le/linux")
+          _CONFIG_OPTS="--host=ppc64le-linux"
+          ;;
+      "platform/s390x/linux")
+[...]</pre>
+to<pre>[...]
+  case "$_Path" in
+      "platform/aarch64/linux")
+          _CONFIG_OPTS="--host=aarch64-linux"
+          ;;
+<strong>    "platform/arm/linux")
+        _CONFIG_OPTS="--host=arm-linux"
+        _CONFIG_OPTS_T="--target=arm-linux-gnueabihf"
+        _CONFIG_OPTS_B="--build=x86_64-linux"
+        CC=/usr/bin/arm-linux-gnueabihf-gcc
+        CXX=/usr/bin/arm-linux-gnueabihf-g++
+        HOST_CC=/usr/bin/arm-linux-gnueabihf-gcc
+        HOST_CXX=/usr/bin/arm-linux-gnueabihf-g++
+        ;;</strong>
+    "platform/ppc64le/linux")
+        _CONFIG_OPTS="--host=ppc64le-linux"
+        ;;
+    "platform/s390x/linux")
+[...]</pre>
+		    as a case for "arm linux" parameters. (<strong>bolded code</strong> are the differences)
+		    Then replace the string:<pre>[...]
+PYTHON=python ./configure --without-intl-api --enable-posix-nspr-emulation --disable-trace-logging --disable-js-shell --disable-tests "$_CONFIG_OPTS"
+[...]</pre>
+with:<pre>[...]
+PYTHON=python ./configure --without-x --without-intl-api --enable-posix-nspr-emulation --disable-trace-logging "$_CONFIG_OPTS" "$_CONFIG_OPTS_T" "$_CONFIG_OPTS_B"
+[...]</pre>
+now run:<pre>./get-sources.sh
+./gen-config.sh arm linux</pre>
+		    We are done with mozjs.<br><br>Lets move on to gperftools.
+		    Go to the root of mongo repo (cd -) and then:<pre>cd src/third_party/gperftools-2.5/
+mkdir build_linux_arm
+cd build_linux_arm
+wget https://github.com/gperftools/gperftools/releases/download/gperftools-2.5/gperftools-2.5.tar.gz
+tar xvf gperftools-2.5.tar.gz
+cd gperftools-2.5/
+CC=/usr/bin/arm-linux-gnueabihf-gcc CXX=/usr/bin/arm-linux-gnueabihf-g++ ./configure --target=arm-linux-gnueabihf --host=arm-linux --build=x86_64-linux
+mv src/config.h ..
+cd ..
+rm -rf gperftools-2.5/</pre>
+you may still encounter som problems while compiling <code>gperftoolsthis</code>: this is because you need to change some flags in <code>SConstruct</code> file.<br>
+Go back to the root of mongo repository and edit the file <code>SConstruct</code>:<pre>            if not AddToCXXFLAGSIfSupported(myenv, '-std=c++14'):
+                myenv.ConfError('Compiler does not honor -std=c++14')</pre>
+with:<pre>            if not AddToCXXFLAGSIfSupported(myenv, '-std=gnu++14'):
+                myenv.ConfError('Compiler does not honor -std=gnu++14')</pre>
+basically changing c++14 with gnu++14 in both lines.<br>Because of this modification you need to modify the file <code>src/mongo/db/storage/mmap_v1/mmap_v1_engine.cpp</code> (at the time it was row 190) from:<pre>[...]
+        const dev_t dev = getPartition(dir);
+
+        // This path handles the case where the filesystem uses the whole device (including LVM)
+        string path = str::stream() << "/sys/dev/block/" << major(dev) << ':' << minor(dev)
+                                    << "/queue/read_ahead_kb";
+
+        if (!boost::filesystem::exists(path)) {
+            // This path handles the case where the filesystem is on a partition.
+            path =
+                str::stream() << "/sys/dev/block/" << major(dev) << ':'
+                              << minor(dev)  // this is a symlink
+                              << "/.."  // parent directory of a partition is for the whole device
+                              << "/queue/read_ahead_kb";
+[...]</pre>
+to:<pre>[...]
+  const dev_t dev = getPartition(dir);
+
+  // This path handles the case where the filesystem uses the whole device (including LVM)
+  string path = str::stream() << "/sys/dev/block/" << <strong>gnu_dev_major</strong>(dev) << ':' << <strong>gnu_dev_minor</strong>(dev)
+                              << "/queue/read_ahead_kb";
+
+  if (!boost::filesystem::exists(path)) {
+      // This path handles the case where the filesystem is on a partition.
+      path =
+          str::stream() << "/sys/dev/block/" << <strong>gnu_dev_major</strong>(dev) << ':'
+                        << <strong>gnu_dev_minor</strong>(dev)  // this is a symlink
+                        << "/.."  // parent directory of a partition is for the whole device
+                        << "/queue/read_ahead_kb";
+[...]</pre>
+and then make sure in the head of the file was included <code>sys/sysmacros.h</code> if compiling on linux:<pre>[...]
+#include &lt;fstream&gt;
+
+<strong>#ifdef __linux__
+#include &lt;sys/sysmacros.h&gt;
+#endif</strong>
+
+#include "mongo/db/client.h"
+[...]</pre>
+Now it is time to modify the file in <code>src/mongo/util/net/ssl_manager.cpp</code> as follow:<br>
+search for the line <code>if (mongoUnsignedAddOverflow64(tagAndLengthByteCount, derLength, outLength) ||</code> (it was row 575 at the time) and make the file become from:<pre>[...]
+    // This is the total length of the TLV and all data
+    // This will not overflow since encodedLengthBytesCount <= 9
+    const uint64_t tagAndLengthByteCount = kTagLength + encodedLengthBytesCount;
+
+    // This may overflow since derLength is from user data so check our arithmetic carefully.
+    if (mongoUnsignedAddOverflow64(tagAndLengthByteCount, derLength, outLength) ||
+        *outLength > cdr.length()) {
+[...]</pre>
+to:<pre>[...]
+    // This is the total length of the TLV and all data
+    // This will not overflow since encodedLengthBytesCount <= 9
+    const uint64_t tagAndLengthByteCount = kTagLength + encodedLengthBytesCount;
+
+<strong>    // converting outLength in compatible variable type for mongoUnsignedAddOverflow64 function (size_t* -> long unsigned int*)
+    long unsigned int newOutLength[(sizeof(outLength)/sizeof(*outLength))];
+    for(unsigned int i = 0; i < (sizeof(outLength)/sizeof(*outLength)); i++) {
+        newOutLength[i] = (long unsigned int) outLength;
+    }</strong>
+
+    // This may overflow since derLength is from user data so check our arithmetic carefully.
+    if (mongoUnsignedAddOverflow64(tagAndLengthByteCount, derLength, <strong>newOutLength</strong>) ||
+        *outLength > cdr.length()) {
+[...]</pre>
+(<strong>bolded code</strong> are the differences)
+<br><br>It is finally time to compile!
+                </p>
+		<h3><strong>Compilation</strong></h3><p>
+		Just run:<pre>./buildscripts/scons.py mongo mongod -j $(nproc --all) --wiredtiger=off --mmapv1=on --disable-warnings-as-errors CC=/usr/bin/arm-linux-gnueabihf-gcc CXX=/usr/bin/arm-linux-gnueabihf-g++</pre>
+    or without ssl:<pre>./buildscripts/scons.py mongo mongod -j $(nproc --all) --wiredtiger=off --mmapv1=on --ssl=off --disable-warnings-as-errors CC=/usr/bin/arm-linux-gnueabihf-gcc CXX=/usr/bin/arm-linux-gnueabihf-g++</pre>
+It took 1 hour to compile on my machine (i7-8550U).<br><br>
+And don't forget to strip the file from debugging siymbols:<pre>/usr/bin/arm-linux-gnueabihf-strip -s build/opt/mongo -o ../mongo
+/usr/bin/arm-linux-gnueabihf-strip -s build/opt/mongod -o ../mongod
+cd ..</pre>
+		</p>
+		<h3><strong>Installation</strong></h3><p>
+		<p>Copy the files <code>mongo</code> and <code>mongod</code> to your preferred position on your Raspberry Pi.<br>
+		Now have fun :).</p>
+		</div>
+            </div>
+	</div>
+    </section>
+    <!-- WORK SECTION END  -->
+    <div id="testimonial" data-scroll-reveal="enter from the bottom after 0.1s">
+        <div class="overlay">
+            <div class="container">
+                <div class="row text-center">
+                    <div class="col-md-4 col-md-offset-4 col-sm-4 col-sm-offset-4">
+                        <i class="ion-ios-drag clr-set f-big"></i>
+                        <br />
+                        <p>
+                          <h3> </h3>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- TESTIMONIAL SECTION END  -->
+    <section id="about">
+        <div class="container">
+
+            <div class="row text-center" data-scroll-reveal="enter from the bottom after 0.1s">
+                <div class="col-md-6 col-md-offset-3 pad-bottom">
+                    <h2><strong>ABOUT ME</strong></h2>
+                    My interest in developing videogame was born when I was 13. Back in the days I hit my head against the limitation of game engines if you can't code.<br>
+                    Since then I started my journey through the coding world.
+                    <p>
+                      At the time I was playing around with a trial version of RPGMaker XP and just copy-pasting code from forums and crossing my fingers. Afterwards I started modifying them to accomplish
+                      my needs until I started fabricating them by my own.
+                    </p>
+                    <p>Now I can code in several languages and I can make games with the most powerful engines like Unreal Engine 4, Unity 3D e Godot.</p>
+                    <p>Of course, being an Open Source enthusiast, my favourite is the last one.</p>
+                    <p>Now I'm currently developing my own engine for a project named Necronomicon Chronicles, a browser board game.</p>
+                </div>
+            </div>
+            <div class="row pad-bottom" data-scroll-reveal="enter from the bottom after 0.2s">
+
+                <div class="col-md-12 col-sm-12">
+                    <div class="media">
+                        <a class="media-left" href="#contact">
+                            <img src="/assets/img/me-sfondo.svg" alt="" class="img-circle" />
+                        </a>
+                        <div class="media-body">
+                            <h3 class="media-heading">Federico Manzella</h3>
+                            Who says a programmer can't play guitar and piano? Of course I'm passionate about electronics and computing too.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- TEAM SECTION END -->
+    <section id="contact">
+        <div class="overlay">
+            <div class="container">
+                <div class="row text-center" data-scroll-reveal="enter from the bottom after 0.1s">
+                    <div class="col-md-6 col-md-offset-3 pad-bottom">
+                        <h1><strong>CONTACT ME </strong></h1>
+                        If you have any questions about my services, or anything else contact me by mail:
+                    </div>
+                </div>
+
+                <div class="row text-center" data-scroll-reveal="enter from the bottom after 0.2s">
+                    <div class="col-md-8 col-md-offset-2 col-sm-8 col-sm-offset-2">
+                        <h4><strong>Email: </strong><a style="color: white;" hreft="mailto:ferdiu.cow.a.bunga@gmail.com">ferdiu.cow.a.bunga@gmail.com</a></h4>
+                    </div>
+                    <div class="col-md-8 col-md-offset-2 col-sm-8 col-sm-offset-2">
+                        <p>or</p>
+                        <h4>
+                            <a style="color: white; font-size: 40px; margin-right: 10px;" href="https://www.linkedin.com/in/federico-manzella-4586601a4/" class="fab fa-linkedin px-5"></a>
+                            <a style="color: white; font-size: 40px; margin-right: 10px;" href="skype:firdiu?chat" class="fab fa-skype px-2"></a>
+                            <a style="color: white; font-size: 40px;" href="https://discordapp.com/users/376858108787556355" class="fab fa-discord px-2"></a>
+                        </h4>
+                    </div>
+
+                </div>
+
+
+
+            </div>
+        </div>
+    </section>
+    <!-- CONTACT SECTION END -->
+    <footer>
+        &copy 2020 <a href="https://ferdiu.github.io">ferdiu.github.io</a> | <a href="http://www.designbootstrap.com/" target="_blank">by DesignBootstrap</a> on <a href="http://www.themezy.com">Themezy</a>
+    </footer>
+    <!--FOOTER SECTION END  -->
+    <!-- JAVASCRIPT FILES PLACED AT THE BOTTOM TO REDUCE THE LOADING TIME  -->
+    <!-- CORE JQUERY  SCRIPTS -->
+    <script src="/assets/js/jquery-1.11.1.js"></script>
+    <!-- BOOTSTRAP SCRIPTS  -->
+    <script src="/assets/js/bootstrap.js"></script>
+    <!-- SCROLLING SCRIPTS PLUGIN  -->
+    <script src="/assets/js/jquery.easing.min.js"></script>
+    <!--  FANCYBOX PLUGIN -->
+    <script src="/assets/js/source/jquery.fancybox.js"></script>
+    <!-- ISOTOPE SCRIPTS -->
+    <script src="/assets/js/jquery.isotope.js"></script>
+     <!-- SCROLL ANIMATIONS  -->
+    <script src="/assets/js/scrollReveal.js"></script>
+    <!-- CUSTOM SCRIPTS   -->
+    <script src="/assets/js/custom.js"></script>
+
+</body>
+</html>

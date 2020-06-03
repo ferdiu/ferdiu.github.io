@@ -419,3 +419,7 @@ footer {
   background-repeat: no-repeat;
   background-size: contain;
 }
+
+pre {
+  margin-top: .5rem;
+}

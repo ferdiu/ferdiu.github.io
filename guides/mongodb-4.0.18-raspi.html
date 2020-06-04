@@ -84,20 +84,34 @@
             <div class="row text-center">
                 <div class="col-md-8 col-md-offset-2 pad-bottom text-left">
                     <h2><strong>How to install MongoDB v4.0.18 on Raspberry Pi (armv7l)</strong></h2>
+                    <p class="text-muted"><i class="far fa-calendar"></i> Published on 4 Jun 2020</p>
+                    <div class="alert alert-danger" role="alert">
+                      <h4 class="text-center"><strong><i class="fas fa-exclamation-triangle"></i> Disclaimer <i class="fas fa-exclamation-triangle"></i></strong></h4>
+                      <p>Database engine mmapv1 was dropped for good reasons. Its biggest limitation is the amount of RAM it can use (2GB) wich is very low for a production environment.<br>
+                      My advice is not to use it in any production environment but only for "home" stuff.<p class="text-center"><strong>No, seriously, don't do that!</strong></p></p>
+                    </div>
+                    <a href="#installation"><div class="alert alert-info text-center" role="alert">
+                      <i class="fas fa-download"></i> Compiled binaries are provided at the bottom of the guide. <i class="fas fa-download"></i>
+                    </div></a>
                     <h3><strong>Overview</strong></h3><p>
                     I was planning on porting my server on the Raspberry Pi because of its low consumption.
 		    Everything was ready but MongoDB (at the time Raspbian had v2.4.14).<br><br>
-		    <strong>NB</strong> this is the newest version available with mmapv1 database engine so the newest you can get for arm devices (from v4.1.x only wiredtiger is supported which is 64bit only).
+		    <strong>NB</strong> this is the newest version available with mmapv1 database engine so the newest you can get for arm 32-bit devices (from v4.1.x only wiredtiger is supported which is 64bit only).
                     <h3><strong>Preparation</strong></h3>
-		    Install the needed packages:<pre>apt install build-essential wget scons libboost-filesystem-dev libboost-program-options-dev libboost-system-dev libboost-thread-dev gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf</pre>
-		    Then tou need to populate the directiories <code>/usr/arm-linux-gnueabihf/lib/</code> and <code>/usr/arm-linux-gnueabihf/include/</code> with the header file from the Raspi packages libssl-dev and libcurl-dev.
+		    <i class="fas fa-chevron-right" style="font-size: 1.75rem; font-weight: bold; margin-right: 1rem; color: #40A459"></i> Install the needed packages:<pre>apt install build-essential wget scons \
+      libboost-filesystem-dev libboost-program-options-dev \
+      libboost-system-dev libboost-thread-dev \
+      gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf</pre>
+		    <i class="fas fa-chevron-right" style="font-size: 1.75rem; font-weight: bold; margin-right: 1rem; color: #40A459"></i> Then you need to populate the directiories <code>/usr/arm-linux-gnueabihf/lib/</code> and <code>/usr/arm-linux-gnueabihf/include/</code> with the header file from the Raspi packages libssl-dev and libcurl-dev.
 		    Time to clone the mongodb repo and checout to the version 'r4.0.18':<pre>git clone https://github.com/mongodb/mongo.git
 cd mongo
 git checkout "r4.0.18"</pre><br>
 		    <p><strong>NB</strong> I builded this on Debian which doesn't provide natively <code>libssl-dev</code> and <code>libcurl-dev</code> for cross-compiling.<br>
-What I did was installing these devvelopment libraries on the raspberry and then copying the content of directories following this scheme:<pre>Raspberry Pi		|	Debian machine
+What I did was installing these devvelopment libraries on the raspberry and then copying the content of directories following this scheme:<pre><strong>Raspberry Pi		|	Debian machine</strong>
 /usr/include/ssl	->	/usr/arm-linux-gnueabihf/include/ssl
-/usr/include/curl	->	/usr/arm-linux-gnueabihf/include/curl</pre>
+/usr/include/curl	->	/usr/arm-linux-gnueabihf/include/curl
+/usr/lib		->	/usr/arm-linux-gnueabihf/lib
+</pre>
 Basically you can run on your raspberry:<pre>apt download libssl-dev libcurl4-openssl-dev libssl1.1 libcurl4
 mkdir mongo-dep
 # extract all downloaded packages in the directory mongo-dep
@@ -114,12 +128,16 @@ rmdir lib/arm-linux-gnueabihf/
 cd ../..
 mv mongo-dep/usr arm-linux-gnueabihf
 rmdir mongo-dep</pre>
-<br>(of course you can copy paste all these commands in a bash script)<br><br>once done that you should end up with a directory named <code>arm-linux-gnueabihf</code> that you can merge with the directory on your "building computer" <code>/usr/arm-linux-gnueabihf</code>.
+<br>(of course you can copy paste all these commands in a bash script)
+<hr>
+<p class="text-muted">Download the <code>arm-linux-gnueabihf</code> directory <a href="mongodb-4.0.18-raspi_res/arm-linux-gnueabihf.tar.xz">here</a>.</p>
+<hr>
+once done that you should end up with a directory named <code>arm-linux-gnueabihf</code> that you can merge with the directory on your "building computer" <code>/usr/arm-linux-gnueabihf</code>.
 		    </p></p>
 		    <h3><strong>Configuration</strong></h3>
 		    <p>Lets take care of the third_party directory first.
 		    The troublemaker packages are mozjs and gperftools.
-		    To solve problems with mozjs do this:<pre>cd src/third_party/mozjs-45/</pre>
+		    <i class="fas fa-chevron-right" style="font-size: 1.75rem; font-weight: bold; margin-right: 1rem; color: #40A459"></i> To solve problems with mozjs do this:<pre>cd src/third_party/mozjs-45/</pre>
 		    Now modify the file <code>gen-config.sh</code> from:<pre>[...]
   case "$_Path" in
       "platform/aarch64/linux")
@@ -135,30 +153,33 @@ to<pre>[...]
       "platform/aarch64/linux")
           _CONFIG_OPTS="--host=aarch64-linux"
           ;;
-<strong>    "platform/arm/linux")
-        _CONFIG_OPTS="--host=arm-linux"
-        _CONFIG_OPTS_T="--target=arm-linux-gnueabihf"
-        _CONFIG_OPTS_B="--build=x86_64-linux"
-        CC=/usr/bin/arm-linux-gnueabihf-gcc
-        CXX=/usr/bin/arm-linux-gnueabihf-g++
-        HOST_CC=/usr/bin/arm-linux-gnueabihf-gcc
-        HOST_CXX=/usr/bin/arm-linux-gnueabihf-g++
-        ;;</strong>
-    "platform/ppc64le/linux")
-        _CONFIG_OPTS="--host=ppc64le-linux"
-        ;;
-    "platform/s390x/linux")
+<strong>      "platform/arm/linux")
+          _CONFIG_OPTS="--host=arm-linux"
+          _CONFIG_OPTS_T="--target=arm-linux-gnueabihf"
+          _CONFIG_OPTS_B="--build=x86_64-linux"
+          export CC=/usr/bin/arm-linux-gnueabihf-gcc
+          export CXX=/usr/bin/arm-linux-gnueabihf-g++
+          export HOST_CC=/usr/bin/arm-linux-gnueabihf-gcc
+          export HOST_CXX=/usr/bin/arm-linux-gnueabihf-g++
+          ;;</strong>
+      "platform/ppc64le/linux")
+          _CONFIG_OPTS="--host=ppc64le-linux"
+          ;;
+      "platform/s390x/linux")
 [...]</pre>
-		    as a case for "arm linux" parameters. (<strong>bolded code</strong> are the differences)
+		    as a case for "arm linux" parameters. (<strong>bolded code</strong> are the differences)<br>
 		    Then replace the string:<pre>[...]
 PYTHON=python ./configure --without-intl-api --enable-posix-nspr-emulation --disable-trace-logging --disable-js-shell --disable-tests "$_CONFIG_OPTS"
 [...]</pre>
 with:<pre>[...]
 PYTHON=python ./configure --without-x --without-intl-api --enable-posix-nspr-emulation --disable-trace-logging "$_CONFIG_OPTS" "$_CONFIG_OPTS_T" "$_CONFIG_OPTS_B"
 [...]</pre>
+<hr>
+<p class="text-muted">Download the <code>gen-config.sh</code> file <a href="mongodb-4.0.18-raspi_res/gen-config.sh" target="_blank">here</a>. (don't forget to grant execution permission)</p>
+<hr>
 now run:<pre>./get-sources.sh
 ./gen-config.sh arm linux</pre>
-		    We are done with mozjs.<br><br>Lets move on to gperftools.
+		    We are done with mozjs.<br><br><i class="fas fa-chevron-right" style="font-size: 1.75rem; font-weight: bold; margin-right: 1rem; color: #40A459"></i> Lets move on to gperftools.
 		    Go to the root of mongo repo (cd -) and then:<pre>cd src/third_party/gperftools-2.5/
 mkdir build_linux_arm
 cd build_linux_arm
@@ -169,12 +190,19 @@ CC=/usr/bin/arm-linux-gnueabihf-gcc CXX=/usr/bin/arm-linux-gnueabihf-g++ ./confi
 mv src/config.h ..
 cd ..
 rm -rf gperftools-2.5/</pre>
-you may still encounter som problems while compiling <code>gperftoolsthis</code>: this is because you need to change some flags in <code>SConstruct</code> file.<br>
-Go back to the root of mongo repository and edit the file <code>SConstruct</code>:<pre>            if not AddToCXXFLAGSIfSupported(myenv, '-std=c++14'):
+<hr>
+<p class="text-muted">Download the <code>config.h</code> file <a href="mongodb-4.0.18-raspi_res/config.h" target="_blank">here</a>.</p>
+<hr>
+you may still encounter some problems while compiling <code>gperftools</code>: this is because you need to change some flags in <code>SConstruct</code> file.<br>
+<i class="fas fa-chevron-right" style="font-size: 1.75rem; font-weight: bold; margin-right: 1rem; color: #40A459"></i> Go back to the root of mongo repository and edit the file <code>SConstruct</code>:<pre>            if not AddToCXXFLAGSIfSupported(myenv, '-std=c++14'):
                 myenv.ConfError('Compiler does not honor -std=c++14')</pre>
 with:<pre>            if not AddToCXXFLAGSIfSupported(myenv, '-std=gnu++14'):
                 myenv.ConfError('Compiler does not honor -std=gnu++14')</pre>
-basically changing c++14 with gnu++14 in both lines.<br>Because of this modification you need to modify the file <code>src/mongo/db/storage/mmap_v1/mmap_v1_engine.cpp</code> (at the time it was row 190) from:<pre>[...]
+basically changing c++14 with gnu++14 in both lines.
+<hr>
+<p class="text-muted">Download the <code>SConstruct</code> file <a href="mongodb-4.0.18-raspi_res/SConstruct" target="_blank">here</a>.</p>
+<hr>
+<i class="fas fa-chevron-right" style="font-size: 1.75rem; font-weight: bold; margin-right: 1rem; color: #40A459"></i> Because of this modification you need to modify the file <code>src/mongo/db/storage/mmap_v1/mmap_v1_engine.cpp</code> (at the time it was row 190) from:<pre>[...]
         const dev_t dev = getPartition(dir);
 
         // This path handles the case where the filesystem uses the whole device (including LVM)
@@ -213,7 +241,14 @@ and then make sure in the head of the file was included <code>sys/sysmacros.h</c
 
 #include "mongo/db/client.h"
 [...]</pre>
-Now it is time to modify the file in <code>src/mongo/util/net/ssl_manager.cpp</code> as follow:<br>
+<hr>
+<p class="text-muted">Download the <code>mmap_v1_engine.cpp</code> file <a href="mongodb-4.0.18-raspi_res/mmap_v1_engine.cpp" target="_blank">here</a>.</p>
+<hr>
+<i class="fas fa-chevron-right" style="font-size: 1.75rem; font-weight: bold; margin-right: 1rem; color: #40A459"></i> Now is turn of <code>src/mongo/util/procparser.cpp</code>; replace all occurencies of <code>uint64_t</code> with <code>long long</code>.
+<hr>
+<p class="text-muted">Download the <code>procparser.cpp</code> file <a href="mongodb-4.0.18-raspi_res/procparser.cpp" target="_blank">here</a>.</p>
+<hr>
+<i class="fas fa-chevron-right" style="font-size: 1.75rem; font-weight: bold; margin-right: 1rem; color: #40A459"></i> Time to modify the file <code>src/mongo/util/net/ssl_manager.cpp</code> as follow:<br>
 search for the line <code>if (mongoUnsignedAddOverflow64(tagAndLengthByteCount, derLength, outLength) ||</code> (it was row 575 at the time) and make the file become from:<pre>[...]
     // This is the total length of the TLV and all data
     // This will not overflow since encodedLengthBytesCount <= 9
@@ -239,19 +274,26 @@ to:<pre>[...]
         *outLength > cdr.length()) {
 [...]</pre>
 (<strong>bolded code</strong> are the differences)
-<br><br>It is finally time to compile!
+<hr>
+<p class="text-muted">Download the <code>ssl_manager.cpp</code> file <a href="mongodb-4.0.18-raspi_res/ssl_manager.cpp" target="_blank">here</a>.</p>
+<hr>
+It is finally time to compile!
                 </p>
 		<h3><strong>Compilation</strong></h3><p>
-		Just run:<pre>./buildscripts/scons.py mongo mongod -j $(nproc --all) --wiredtiger=off --mmapv1=on --disable-warnings-as-errors CC=/usr/bin/arm-linux-gnueabihf-gcc CXX=/usr/bin/arm-linux-gnueabihf-g++</pre>
+		<i class="fas fa-chevron-right" style="font-size: 1.75rem; font-weight: bold; margin-right: 1rem; color: #40A459"></i> Just run:<pre>./buildscripts/scons.py mongo mongod -j $(nproc --all) --wiredtiger=off --mmapv1=on --disable-warnings-as-errors CC=/usr/bin/arm-linux-gnueabihf-gcc CXX=/usr/bin/arm-linux-gnueabihf-g++</pre>
     or without ssl:<pre>./buildscripts/scons.py mongo mongod -j $(nproc --all) --wiredtiger=off --mmapv1=on --ssl=off --disable-warnings-as-errors CC=/usr/bin/arm-linux-gnueabihf-gcc CXX=/usr/bin/arm-linux-gnueabihf-g++</pre>
 It took 1 hour to compile on my machine (i7-8550U).<br><br>
-And don't forget to strip the file from debugging siymbols:<pre>/usr/bin/arm-linux-gnueabihf-strip -s build/opt/mongo -o ../mongo
+<i class="fas fa-chevron-right" style="font-size: 1.75rem; font-weight: bold; margin-right: 1rem; color: #40A459"></i> And don't forget to strip the file from debugging siymbols:<pre>/usr/bin/arm-linux-gnueabihf-strip -s build/opt/mongo -o ../mongo
 /usr/bin/arm-linux-gnueabihf-strip -s build/opt/mongod -o ../mongod
 cd ..</pre>
 		</p>
-		<h3><strong>Installation</strong></h3><p>
-		<p>Copy the files <code>mongo</code> and <code>mongod</code> to your preferred position on your Raspberry Pi.<br>
-		Now have fun :).</p>
+		<h3 id="installation"><strong>Installation</strong></h3><p>
+		<p><i class="fas fa-chevron-right" style="font-size: 1.75rem; font-weight: bold; margin-right: 1rem; color: #40A459"></i> Copy the files <code>mongo</code> and <code>mongod</code> to your preferred position on your Raspberry Pi.<br>
+<hr>
+<p class="text-muted">Download the stipped executables <a href="mongodb-4.0.18-raspi_res/mongodb.tar.xz" target="_blank">here</a>.</p>
+<hr>
+Have fun :)
+</p>
 		</div>
             </div>
 	</div>

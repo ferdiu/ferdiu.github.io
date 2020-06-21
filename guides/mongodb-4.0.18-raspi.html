@@ -103,7 +103,7 @@
       libboost-system-dev libboost-thread-dev \
       gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf</pre>
 		    <i class="fas fa-chevron-right" style="font-size: 1.75rem; font-weight: bold; margin-right: 1rem; color: #40A459"></i> Then you need to populate the directiories <code>/usr/arm-linux-gnueabihf/lib/</code> and <code>/usr/arm-linux-gnueabihf/include/</code> with the header file from the Raspi packages libssl-dev and libcurl-dev.
-		    Time to clone the mongodb repo and checout to the version 'r4.0.18':<pre>git clone https://github.com/mongodb/mongo.git
+		    Time to clone the mongodb repo and checkout to the version 'r4.0.18':<pre>git clone https://github.com/mongodb/mongo.git
 cd mongo
 git checkout "r4.0.18"</pre><br>
 		    <p><strong>NB</strong> I builded this on Debian which doesn't provide natively <code>libssl-dev</code> and <code>libcurl-dev</code> for cross-compiling.<br>

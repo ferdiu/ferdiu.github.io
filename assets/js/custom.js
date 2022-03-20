@@ -38,14 +38,30 @@ $(document).ready(function () {
         });
 
     //FANCY BOX PLUGIN SCRIPT FOR POPUP IMAGE
-        $('.fancybox-media').fancybox({
-            openEffect: 'elastic',
-            closeEffect: 'elastic',
-            helpers: {
-                title: {
-                    type: 'inside'
+        $('.fancybox-media').fancybox(()=> {
+            if (this.data('type') != undefined)
+                return {
+                    openEffect: 'elastic',
+                    closeEffect: 'elastic',
+                    helpers: {
+                        title: {
+                            type: 'inside'
+                        }
+                    },
+                    href: this.href,
+                    type: () => { console.log(this.data('type')); return this.data('type'); }
                 }
-            }
+            else
+                return {
+                    openEffect: 'elastic',
+                    closeEffect: 'elastic',
+                    helpers: {
+                        title: {
+                            type: 'inside'
+                        }
+                    },
+                    href: this.href
+                }
         });
 
     //ISOTOPE  PLUGIN SCRIPT FOR FILTER FUCNTIONALITY
@@ -79,5 +95,6 @@ $(document).ready(function () {
     //CLIENTS SLIDER
         $("#clients-slider").carousel({
             interval: 2000 //TIME IN MILLI SECONDS
-        });
+        });
+
 });

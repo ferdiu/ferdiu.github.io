@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Macros · SimpleCaching.jl</title><script data-outdated-warner src="assets/warner.js"></script><link rel="canonical" href="https://ferdiu.github.io/SimpleCaching.jl/macros.html"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="index.html">SimpleCaching.jl</a></span></div><form class="docs-search" action="search.html"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="index.html">Home</a></li><li class="is-active"><a class="tocitem" href="macros.html">Macros</a><ul class="internal"><li><a class="tocitem" href="#man-macros-caching"><span>Caching</span></a></li><li><a class="tocitem" href="#man-macros-conditional-caching"><span>Conditional caching</span></a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href="macros.html">Macros</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href="macros.html">Macros</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/ferdiu/SimpleCaching.jl/blob/master/docs/src/macros.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="man-macros"><a class="docs-heading-anchor" href="#man-macros">Macros</a><a id="man-macros-1"></a><a class="docs-heading-anchor-permalink" href="#man-macros" title="Permalink"></a></h1><p>All the macros can be described as one:</p><pre><code class="language-julia hljs">@scache[jld][_if condition] type cache_dir function_call</code></pre><p>when <code>jld</code> is specified right after <code>@scache</code> then <code>JLD2</code> will be used instead of <code>Serialization</code>; when <code>_if condition</code> are specified right after <code>@scache[jld]</code> then the caching will be used only if <code>condition</code> is verified.</p><p>For more details consult <a href="macros.html#man-macros-caching"><code>Caching</code></a> and <a href="macros.html#man-macros-conditional-caching"><code>Conditional caching</code></a> sections below.</p><h2 id="man-macros-caching"><a class="docs-heading-anchor" href="#man-macros-caching">Caching</a><a id="man-macros-caching-1"></a><a class="docs-heading-anchor-permalink" href="#man-macros-caching" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="SimpleCaching.@scache" href="#SimpleCaching.@scache"><code>SimpleCaching.@scache</code></a> — <span class="docstring-category">Macro</span></header><section><div><pre><code class="language-julia hljs">scache(type, cache_dir, function_call)</code></pre><p>Cache the result of <code>function_call</code> in directory <code>cache_dir</code> prefixing the saved file with <code>type</code>.</p><p>This macro uses <code>Serialize</code> <code>serialize</code> and <code>deserialize</code> functions to save and load cached files so it is faster and more memory efficent than <a href="macros.html#SimpleCaching.@scachejld"><code>@scachejld</code></a> macro which uses <code>JLD2</code> which, on the other hand, is more portable between different julia versions.</p><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>The file extension will be <code>.jld</code> when using both <a href="macros.html#SimpleCaching.@scache"><code>@scache</code></a> and <a href="macros.html#SimpleCaching.@scachejld"><code>@scachejld</code></a>.</p></div></div><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using SimpleCaching
+
+julia&gt; SimpleCaching.settings.log = true;
+
+julia&gt; @scache &quot;cute-cube&quot; &quot;./&quot; fill(0, 3, 3, 3)
+● [ 2022-12-09 15:39:42 ] Computing cute-cube...
+● [ 2022-12-09 15:39:42 ] Computed cute-cube in 0.009 seconds (00:00:00)
+● [ 2022-12-09 15:39:44 ] Saving cute-cube to file ./cute-cube_4bbf9c2851f2c2b3954448f1a8085f6e3d40085add71f19640343885a8b7bd6a.jld[.tmp]...
+3×3×3 Array{Int64, 3}:
+[:, :, 1] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 2] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 3] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+julia&gt; @scache &quot;cute-cube&quot; &quot;./&quot; fill(0, 3, 3, 3)
+● [ 2022-12-09 15:39:56 ] Loading cute-cube from file ./cute-cube_4bbf9c2851f2c2b3954448f1a8085f6e3d40085add71f19640343885a8b7bd6a.jld...
+3×3×3 Array{Int64, 3}:
+[:, :, 1] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 2] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 3] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+shell&gt; ls -l cute-cube_4bbf9c2851f2c2b3954448f1a8085f6e3d40085add71f19640343885a8b7bd6a.jld
+-rw-r--r--. 1 user user 232  9 dic 15.39 cute-cube_4bbf9c2851f2c2b3954448f1a8085f6e3d40085add71f19640343885a8b7bd6a.jld
+</code></pre><p>Expressions in function argument will be computed as first step so the cached file will be loaded even if the arguments are different but will evaluate to the same result.</p><pre><code class="language-julia-repl hljs">julia&gt; @scache &quot;cute-cube&quot; &quot;./&quot; fill(0, 3, parse(Int, &quot;3&quot;), 3)
+● [ 2022-12-09 09:41:54 ] Loading cute-cube from file ./cute-cube_4bbf9c2851f2c2b3954448f1a8085f6e3d40085add71f19640343885a8b7bd6a.jld...
+3×3×3 Array{Int64, 3}:
+[:, :, 1] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 2] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 3] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/ferdiu/SimpleCaching.jl/blob/213d8868267d610b86c0e2f946951d81bd424aa4/src/caching.jl#L198-L281">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="SimpleCaching.@scachejld" href="#SimpleCaching.@scachejld"><code>SimpleCaching.@scachejld</code></a> — <span class="docstring-category">Macro</span></header><section><div><pre><code class="language-julia hljs">scachejld(type, cache_dir, function_call)</code></pre><p>Cache the result of <code>function_call</code> in directory <code>cache_dir</code> prefixing the saved file with <code>type</code>.</p><p>This macro uses <code>JLD2</code> <code>@save</code> and <code>@load</code> macros to save and load cached files so it is slower and less memory efficent than <a href="macros.html#SimpleCaching.@scache"><code>@scache</code></a> macro which uses <code>serialize</code> which, on the other hand, is less portable between different julia versions.</p><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>The file extension will be <code>.jld</code> when using both <a href="macros.html#SimpleCaching.@scache"><code>@scache</code></a> and <a href="macros.html#SimpleCaching.@scachejld"><code>@scachejld</code></a>.</p></div></div><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using SimpleCaching
+
+julia&gt; SimpleCaching.settings.log = true;
+
+julia&gt; @scachejld &quot;cute-cube&quot; &quot;./&quot; fill(0, 3, 3, 3)
+● [ 2022-12-09 15:56:09 ] Computing cute-cube...
+● [ 2022-12-09 15:56:09 ] Computed cute-cube in 0.0 seconds (00:00:00)
+● [ 2022-12-09 15:56:09 ] Saving cute-cube to file ./cute-cube_4bbf9c2851f2c2b3954448f1a8085f6e3d40085add71f19640343885a8b7bd6a.jld[.tmp]...
+3×3×3 Array{Int64, 3}:
+[:, :, 1] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 2] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 3] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+julia&gt; @scachejld &quot;cute-cube&quot; &quot;./&quot; fill(0, 3, 3, 3)
+● [ 2022-12-09 15:56:19 ] Loading cute-cube from file ./cute-cube_4bbf9c2851f2c2b3954448f1a8085f6e3d40085add71f19640343885a8b7bd6a.jld...
+3×3×3 Array{Int64, 3}:
+[:, :, 1] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 2] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 3] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+shell&gt; ls -l cute-cube_4bbf9c2851f2c2b3954448f1a8085f6e3d40085add71f19640343885a8b7bd6a.jld
+-rw-r--r--. 1 user user 1000  9 dic 15.56 cute-cube_4bbf9c2851f2c2b3954448f1a8085f6e3d40085add71f19640343885a8b7bd6a.jld
+</code></pre><p>Expressions in function argument will be computed as first step so the cached file will be loaded even if the arguments are different but will evaluate to the same result.</p><pre><code class="language-julia-repl hljs">julia&gt; @scachejld &quot;cute-cube&quot; &quot;./&quot; fill(0, 3, round(Int64, 1.5 * 2), 3)
+● [ 2022-12-09 15:59:13 ] Loading cute-cube from file ./cute-cube_4bbf9c2851f2c2b3954448f1a8085f6e3d40085add71f19640343885a8b7bd6a.jld...
+3×3×3 Array{Int64, 3}:
+[:, :, 1] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 2] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 3] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/ferdiu/SimpleCaching.jl/blob/213d8868267d610b86c0e2f946951d81bd424aa4/src/caching.jl#L289-L372">source</a></section></article><h2 id="man-macros-conditional-caching"><a class="docs-heading-anchor" href="#man-macros-conditional-caching">Conditional caching</a><a id="man-macros-conditional-caching-1"></a><a class="docs-heading-anchor-permalink" href="#man-macros-conditional-caching" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="SimpleCaching.@scache_if" href="#SimpleCaching.@scache_if"><code>SimpleCaching.@scache_if</code></a> — <span class="docstring-category">Macro</span></header><section><div><pre><code class="language-julia hljs">scache_if(condition, type, cache_dir, function_call)</code></pre><p>Cache the result of <code>function_call</code> only if <code>condition</code> is <code>true</code>.</p><p>Note that will not be loaded the cached result even if present.</p><p>For other parameters docs see <a href="macros.html#SimpleCaching.@scache"><code>@scache</code></a>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using SimpleCaching
+
+julia&gt; SimpleCaching.settings.log = true;
+
+julia&gt; @scache_if true &quot;cute-cube&quot; &quot;./&quot; fill(0, 3, 3, 3)
+● [ 2022-12-09 15:39:42 ] Computing cute-cube...
+● [ 2022-12-09 15:39:42 ] Computed cute-cube in 0.009 seconds (00:00:00)
+● [ 2022-12-09 15:39:44 ] Saving cute-cube to file ./cute-cube_4bbf9c2851f2c2b3954448f1a8085f6e3d40085add71f19640343885a8b7bd6a.jld[.tmp]...
+3×3×3 Array{Int64, 3}:
+[:, :, 1] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 2] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 3] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+julia&gt; @scache_if true &quot;cute-cube&quot; &quot;./&quot; fill(0, 3, 3, 3)
+● [ 2022-12-09 15:41:54 ] Loading cute-cube from file ./cute-cube_4bbf9c2851f2c2b3954448f1a8085f6e3d40085add71f19640343885a8b7bd6a.jld...
+3×3×3 Array{Int64, 3}:
+[:, :, 1] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 2] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 3] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+shell&gt; ls -lh cute-cube_4bbf9c2851f2c2b3954448f1a8085f6e3d40085add71f19640343885a8b7bd6a.jld
+-rw-r--r--. 1 user user 1000 9 dic 09.54 cute-cube_4bbf9c2851f2c2b3954448f1a8085f6e3d40085add71f19640343885a8b7bd6a.jld
+</code></pre><p>but passing a <code>false</code> <code>condition</code> (note there is no loading log):</p><pre><code class="language-julia-repl hljs">julia&gt; @scache_if false &quot;cute-cube&quot; &quot;./&quot; fill(0, 3, 3, 3)
+3×3×3 Array{Int64, 3}:
+[:, :, 1] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 2] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 3] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/ferdiu/SimpleCaching.jl/blob/213d8868267d610b86c0e2f946951d81bd424aa4/src/caching.jl#L379-L458">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="SimpleCaching.@scachejld_if" href="#SimpleCaching.@scachejld_if"><code>SimpleCaching.@scachejld_if</code></a> — <span class="docstring-category">Macro</span></header><section><div><pre><code class="language-julia hljs">scachejld_if(condition, type, cache_dir, function_call)</code></pre><p>Cache the result of <code>function_call</code> only if <code>condition</code> is <code>true</code>.</p><p>Note that will not be loaded the cached result even if present.</p><p>For other parameters docs see <a href="macros.html#SimpleCaching.@scachejld"><code>@scachejld</code></a>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using SimpleCaching
+
+julia&gt; SimpleCaching.settings.log = true;
+
+julia&gt; @scachejld_if true &quot;cute-cube&quot; &quot;./&quot; fill(0, 3, 3, 3)
+● [ 2022-12-09 16:06:42 ] Computing cute-cube...
+● [ 2022-12-09 16:06:42 ] Computed cute-cube in 0.009 seconds (00:00:00)
+● [ 2022-12-09 16:06:44 ] Saving cute-cube to file ./cute-cube_4bbf9c2851f2c2b3954448f1a8085f6e3d40085add71f19640343885a8b7bd6a.jld[.tmp]...
+3×3×3 Array{Int64, 3}:
+[:, :, 1] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 2] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 3] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+julia&gt; @scachejld_if true &quot;cute-cube&quot; &quot;./&quot; fill(0, 3, 3, 3)
+● [ 2022-12-09 16:07:04 ] Loading cute-cube from file ./cute-cube_4bbf9c2851f2c2b3954448f1a8085f6e3d40085add71f19640343885a8b7bd6a.jld...
+3×3×3 Array{Int64, 3}:
+[:, :, 1] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 2] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 3] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+shell&gt; ls -lh cute-cube_4bbf9c2851f2c2b3954448f1a8085f6e3d40085add71f19640343885a8b7bd6a.jld
+-rw-r--r--. 1 user user 1000 9 dic 16.07 cute-cube_4bbf9c2851f2c2b3954448f1a8085f6e3d40085add71f19640343885a8b7bd6a.jld
+</code></pre><p>but passing a <code>false</code> <code>condition</code> (note there is no loading log):</p><pre><code class="language-julia-repl hljs">julia&gt; @scachejld_if false &quot;cute-cube&quot; &quot;./&quot; fill(0, 3, 3, 3)
+3×3×3 Array{Int64, 3}:
+[:, :, 1] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 2] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+
+[:, :, 3] =
+ 0  0  0
+ 0  0  0
+ 0  0  0
+</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/ferdiu/SimpleCaching.jl/blob/213d8868267d610b86c0e2f946951d81bd424aa4/src/caching.jl#L469-L548">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="index.html">« Home</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Friday 6 January 2023 19:27">Friday 6 January 2023</span>. Using Julia version 1.8.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

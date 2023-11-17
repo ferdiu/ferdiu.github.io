@@ -402,13 +402,14 @@ footer {
     background-color: rgba(237, 237, 237, 1);
 }
 
-    footer a, footer a:hover {
-        color: #000;
-        text-decoration: none;
-    }
-    /* =============================================================
-      ME SECTION STYLES
-     ============================================================ */
+footer a, footer a:hover {
+    color: #000;
+    text-decoration: none;
+}
+
+/* =============================================================
+  ME SECTION STYLES
+ ============================================================ */
 .me-svg {
 /*  position: absolute;
   bottom: 0px;
@@ -422,4 +423,48 @@ footer {
 
 pre {
   margin-top: .5rem;
+}
+
+/* =============================================================
+  CARDS
+ ============================================================ */
+.ferdiu-card {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 0;
+    transition: box-shadow 0.2s, transform 0.2s, background-color 0.2s;
+    border-radius: 2rem;
+    padding: .5rem;
+    z-index: 0;
+}
+
+.ferdiu-card:hover {
+    transform: scale(1.15);
+    box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -5px 0px inset;
+    background-color: rgba(245, 245, 245, 1);
+    padding-bottom: 1rem;
+    z-index: 1;
+}
+
+/* =============================================================
+ *  CARDS
+ * ============================================================ */
+.social-badge {
+    color: white;
+    font-size: 40px;
+    margin-right: 10px;
+    transform: scale(1);
+    transition: transform 0.2s, filter 0.2s, opacity 0.2s;
+    opacity: 0.85;
+    z-index: 0;
+}
+
+.social-badge:hover {
+    color: white;
+    transform: scale(1.5);
+    z-index: 1;
+    opacity: 1;
+}
+
+.social-badge:last-of-type {
+    margin-right: 0;
 }
